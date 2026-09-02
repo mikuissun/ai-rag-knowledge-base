@@ -97,6 +97,15 @@ input {
   font: inherit;
 }
 
+textarea {
+  width: 100%;
+  resize: vertical;
+  padding: 11px 12px;
+  border: 1px solid #d7deeb;
+  border-radius: 8px;
+  font: inherit;
+}
+
 input:focus {
   border-color: #3b82f6;
   box-shadow: 0 0 0 3px rgb(59 130 246 / 12%);
@@ -125,6 +134,55 @@ input:focus {
   padding: 12px;
   border-radius: 8px;
   font-size: 14px;
+}
+
+.user-bar,
+.section-heading,
+.knowledge-layout,
+.knowledge-list li {
+  display: flex;
+  align-items: center;
+}
+
+.user-bar,
+.section-heading {
+  justify-content: space-between;
+  margin: 24px 0 16px;
+}
+
+.text-button,
+.danger-button {
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  font: inherit;
+}
+
+.text-button { color: #2563eb; }
+.danger-button { color: #be123c; font-size: 13px; }
+
+.knowledge-layout {
+  align-items: start;
+  gap: 32px;
+}
+
+.knowledge-layout > section,
+.knowledge-form { flex: 1; min-width: 0; }
+
+.knowledge-form h2,
+.section-heading h2 { margin: 0; font-size: 18px; }
+
+.knowledge-list { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+
+.knowledge-list li { justify-content: space-between; gap: 8px; border: 1px solid #e3e8f3; border-radius: 8px; }
+
+.knowledge-item { display: grid; gap: 5px; width: 100%; padding: 12px; border: 0; background: transparent; text-align: left; cursor: pointer; }
+.knowledge-item span, .empty { color: #7b879a; font-size: 13px; }
+
+@media (max-width: 680px) {
+  .auth-card { padding: 28px; }
+  .knowledge-layout { flex-direction: column; }
+  .knowledge-layout > section, .knowledge-form { width: 100%; }
 }
 
 .notice.success,

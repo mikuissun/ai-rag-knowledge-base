@@ -2,7 +2,7 @@
 
 用于求职作品集的企业级 AI 应用项目。项目将支持企业知识库管理、文档解析、向量检索、RAG 问答、多轮对话、SSE 流式回答和引用来源展示。
 
-> 当前处于阶段 2：数据库与用户认证基础。已实现用户注册、登录、BCrypt 密码哈希、JWT 签发与 Flyway 用户表迁移；知识库、文档处理和 AI 问答仍为后续计划。
+> 当前处于阶段 3：知识库管理。已实现用户注册/登录、JWT 身份认证，以及登录用户的知识库创建、查询、修改和删除；文档处理和 AI 问答仍为后续计划。
 
 ## 技术栈
 
@@ -45,7 +45,17 @@ mvn spring-boot:run
 
 健康检查：`GET http://localhost:8080/api/health`
 
-启动时 Flyway 会执行数据库迁移。认证接口：`POST /api/auth/register`、`POST /api/auth/login`。
+启动时 Flyway 会执行数据库迁移。认证接口：`POST /api/auth/register`、`POST /api/auth/login`；登录后可通过 `Authorization: Bearer <JWT>` 调用知识库接口。
+
+## 知识库 API
+
+- `POST /api/knowledge-bases`：创建当前用户的知识库
+- `GET /api/knowledge-bases`：查询当前用户的知识库列表
+- `GET /api/knowledge-bases/{id}`：查询当前用户的知识库详情
+- `PUT /api/knowledge-bases/{id}`：修改当前用户的知识库
+- `DELETE /api/knowledge-bases/{id}`：删除当前用户的知识库
+
+知识库接口仅从已验证的 JWT 取得当前用户，不接受 `userId` 请求参数。当前版本采用物理删除；文档及向量数据加入后会扩展关联清理策略。
 
 ## 前端启动
 

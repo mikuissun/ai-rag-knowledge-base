@@ -43,6 +43,9 @@ public class JwtTokenService {
                     .parseSignedClaims(token)
                     .getPayload();
             Number userId = claims.get("userId", Number.class);
+            if (userId == null || claims.getSubject() == null || claims.getSubject().isBlank()) {
+                return Optional.empty();
+            }
             return Optional.of(new TokenPayload(userId.longValue(), claims.getSubject()));
         } catch (JwtException | IllegalArgumentException exception) {
             return Optional.empty();
