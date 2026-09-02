@@ -15,3 +15,8 @@ management:
   endpoint:
     health:
       show-details: never
+
+app:
+  jwt:
+    secret: ${JWT_SECRET:}
+    expiration-seconds: ${JWT_EXPIRATION_SECONDS:86400}

@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class HealthController {
 
     @GetMapping("/health")
-    public ApiResponse health() {
+    public ApiResponse<Void> health() {
         return ApiResponse.ok();
     }
 }
