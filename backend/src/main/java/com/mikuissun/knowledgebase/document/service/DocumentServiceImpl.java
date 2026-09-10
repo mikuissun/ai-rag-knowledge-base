@@ -87,7 +87,8 @@ public class DocumentServiceImpl implements DocumentService {
         return mapper.selectList(new LambdaQueryWrapper<Document>()
                 .select(Document::getId, Document::getKnowledgeBaseId, Document::getOriginalName,
                         Document::getFileType, Document::getFileSize, Document::getStatus,
-                        Document::getCreatedAt, Document::getUpdatedAt)
+                        Document::getCreatedAt, Document::getUpdatedAt, Document::getProcessingStatus,
+                        Document::getProcessingError, Document::getProcessedAt)
                 .eq(Document::getKnowledgeBaseId, knowledgeBaseId).eq(Document::getUserId, userId)
                 .orderByDesc(Document::getCreatedAt, Document::getId))
                 .stream().map(DocumentListResponse::from).toList();

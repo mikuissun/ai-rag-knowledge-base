@@ -5,10 +5,12 @@ import java.time.LocalDateTime;
 
 public record DocumentResponse(Long id, Long knowledgeBaseId, String originalName,
         String fileType, Long fileSize, Integer status, LocalDateTime createdAt,
-        LocalDateTime updatedAt, String contentText) {
+        LocalDateTime updatedAt, String contentText, String processingStatus,
+        String processingError, LocalDateTime processedAt) {
     public static DocumentResponse from(Document document) {
         return new DocumentResponse(document.getId(), document.getKnowledgeBaseId(), document.getOriginalName(),
                 document.getFileType(), document.getFileSize(), document.getStatus(),
-                document.getCreatedAt(), document.getUpdatedAt(), document.getContentText());
+                document.getCreatedAt(), document.getUpdatedAt(), document.getContentText(),
+                document.getProcessingStatus(), document.getProcessingError(), document.getProcessedAt());
     }
 }

@@ -67,6 +67,9 @@ public class GlobalExceptionHandler {
             case 404 -> HttpStatus.NOT_FOUND;
             case 409 -> HttpStatus.CONFLICT;
             case 413 -> HttpStatus.PAYLOAD_TOO_LARGE;
+            case 502 -> HttpStatus.BAD_GATEWAY;
+            case 503 -> HttpStatus.SERVICE_UNAVAILABLE;
+            case 504 -> HttpStatus.GATEWAY_TIMEOUT;
             case 500 -> HttpStatus.INTERNAL_SERVER_ERROR;
             default -> HttpStatus.BAD_REQUEST;
         };

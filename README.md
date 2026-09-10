@@ -61,7 +61,13 @@ mvn spring-boot:run
 
 已提供 PDF / DOCX / Markdown / TXT 上传、原文件保存、正文解析、文档列表/详情及删除 API。单文件上限 20MiB，默认存储目录为后端工作目录下的 `data/uploads`，可通过 `STORAGE_BASE_PATH` 配置；Flyway V3 新建 documents 表。
 
-接口位于 `/api/knowledge-bases/{knowledgeBaseId}/documents`，沿用 JWT 与用户数据隔离。当前不新增前端文档页面，不包含文本切分、Embedding 或 RAG。完整变更清单、启动命令、curl 示例、安全边界及测试说明见 [Stage 4 文档](docs/stage4.md)。
+接口位于 `/api/knowledge-bases/{knowledgeBaseId}/documents`，沿用 JWT 与用户数据隔离。Stage 4 本身不包含文本切分、Embedding 或 RAG。完整变更清单、启动命令、curl 示例、安全边界及测试说明见 [Stage 4 文档](docs/stage4.md)。
+
+## Stage 5 文本切分与 Embedding
+
+已新增文档处理接口 `POST /api/knowledge-bases/{knowledgeBaseId}/documents/{documentId}/process`。正文按自然边界切分后，通过 DashScope `text-embedding-v4` 生成 1024 维向量；Chunk 和向量暂存 MySQL，供下一阶段接入向量数据库。
+
+默认切分参数为 1000 字符、150 字符 overlap、单文档最多 500 个 Chunk。处理配置、事务设计、状态流转、测试方式和已知边界见 [Stage 5 文档](docs/stage5.md)。本阶段不包含 Qdrant、检索或 RAG。
 
 ## 前端启动
 

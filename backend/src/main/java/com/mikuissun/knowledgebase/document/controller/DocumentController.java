@@ -5,6 +5,8 @@ import com.mikuissun.knowledgebase.common.api.ApiResponse;
 import com.mikuissun.knowledgebase.document.dto.DocumentResponse;
 import com.mikuissun.knowledgebase.document.dto.DocumentListResponse;
 import com.mikuissun.knowledgebase.document.service.DocumentService;
+import com.mikuissun.knowledgebase.document.processing.DocumentProcessingService;
+import com.mikuissun.knowledgebase.document.processing.dto.DocumentProcessResponse;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
@@ -13,7 +15,11 @@ import java.util.List;
 @RequestMapping("/api/knowledge-bases/{knowledgeBaseId}/documents")
 public class DocumentController {
     private final DocumentService service;
-    public DocumentController(DocumentService service) { this.service = service; }
+    private final DocumentProcessingService processingService;
+    public DocumentController(DocumentService service, DocumentProcessingService processingService) {
+        this.service = service;
+        this.processingService = processingService;
+    }
 
     @PostMapping(consumes = "multipart/form-data")
     public ApiResponse<DocumentResponse> upload(@PathVariable Long knowledgeBaseId,
@@ -32,5 +38,12 @@ public class DocumentController {
     public ApiResponse<Void> delete(@PathVariable Long knowledgeBaseId, @PathVariable Long documentId) {
         service.delete(knowledgeBaseId, documentId, CurrentUserContext.requireCurrentUser().id());
         return ApiResponse.ok();
+    }
+
+    @PostMapping("/{documentId}/process")
+    public ApiResponse<DocumentProcessResponse> process(@PathVariable Long knowledgeBaseId,
+                                                        @PathVariable Long documentId) {
+        return ApiResponse.ok(processingService.process(
+                knowledgeBaseId, documentId, CurrentUserContext.requireCurrentUser().id()));
     }
 }

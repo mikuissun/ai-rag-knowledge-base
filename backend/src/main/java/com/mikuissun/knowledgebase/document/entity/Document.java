@@ -15,6 +15,9 @@ public class Document {
     private Long fileSize;
     private String contentText;
     private Integer status;
+    private String processingStatus;
+    private String processingError;
+    private LocalDateTime processedAt;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -47,6 +50,15 @@ public class Document {
 
     public Integer getStatus() { return status; }
     public void setStatus(Integer status) { this.status = status; }
+
+    public String getProcessingStatus() { return processingStatus; }
+    public void setProcessingStatus(String processingStatus) { this.processingStatus = processingStatus; }
+
+    public String getProcessingError() { return processingError; }
+    public void setProcessingError(String processingError) { this.processingError = processingError; }
+
+    public LocalDateTime getProcessedAt() { return processedAt; }
+    public void setProcessedAt(LocalDateTime processedAt) { this.processedAt = processedAt; }
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
