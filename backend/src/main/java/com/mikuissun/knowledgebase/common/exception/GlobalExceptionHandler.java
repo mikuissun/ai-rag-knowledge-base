@@ -13,6 +13,19 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    @ExceptionHandler(org.springframework.web.multipart.MaxUploadSizeExceededException.class)
+    @ResponseStatus(HttpStatus.PAYLOAD_TOO_LARGE)
+    public ApiResponse<Void> handleUploadSize(Exception exception) {
+        return ApiResponse.fail(413, "文件不能超过 20MB，请一次上传一个文件");
+    }
+
+    @ExceptionHandler({org.springframework.web.multipart.support.MissingServletRequestPartException.class,
+            org.springframework.web.method.annotation.MethodArgumentTypeMismatchException.class})
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ApiResponse<Void> handleMultipartParameter(Exception exception) {
+        return ApiResponse.fail(400, "请提供有效的路径参数和 file 文件字段");
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ApiResponse<Void> handleValidation(MethodArgumentNotValidException exception) {
@@ -38,7 +51,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(DataIntegrityViolationException.class)
     @ResponseStatus(HttpStatus.CONFLICT)
     public ApiResponse<Void> handleDataIntegrityViolation(DataIntegrityViolationException exception) {
-        return ApiResponse.fail(409, "用户名已存在");
+        return ApiResponse.fail(409, "数据冲突：记录已存在或仍被其他数据引用");
     }
 
     @ExceptionHandler(Exception.class)
@@ -53,6 +66,8 @@ public class GlobalExceptionHandler {
             case 403 -> HttpStatus.FORBIDDEN;
             case 404 -> HttpStatus.NOT_FOUND;
             case 409 -> HttpStatus.CONFLICT;
+            case 413 -> HttpStatus.PAYLOAD_TOO_LARGE;
+            case 500 -> HttpStatus.INTERNAL_SERVER_ERROR;
             default -> HttpStatus.BAD_REQUEST;
         };
     }

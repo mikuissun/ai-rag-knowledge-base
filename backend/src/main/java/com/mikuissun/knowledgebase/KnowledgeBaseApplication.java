@@ -5,7 +5,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.mybatis.spring.annotation.MapperScan;
 
 @SpringBootApplication
-@MapperScan({"com.mikuissun.knowledgebase.user.mapper", "com.mikuissun.knowledgebase.knowledge.mapper"})
+@MapperScan({"com.mikuissun.knowledgebase.user.mapper", "com.mikuissun.knowledgebase.knowledge.mapper",
+        "com.mikuissun.knowledgebase.document.mapper"})
 public class KnowledgeBaseApplication {
 
     public static void main(String[] args) {

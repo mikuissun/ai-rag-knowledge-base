@@ -55,7 +55,13 @@ mvn spring-boot:run
 - `PUT /api/knowledge-bases/{id}`：修改当前用户的知识库
 - `DELETE /api/knowledge-bases/{id}`：删除当前用户的知识库
 
-知识库接口仅从已验证的 JWT 取得当前用户，不接受 `userId` 请求参数。当前版本采用物理删除；文档及向量数据加入后会扩展关联清理策略。
+知识库接口仅从已验证的 JWT 取得当前用户，不接受 `userId` 请求参数。当前版本采用物理删除；含文档的知识库返回 409，请先删除文档。
+
+## Stage 4 文档管理
+
+已提供 PDF / DOCX / Markdown / TXT 上传、原文件保存、正文解析、文档列表/详情及删除 API。单文件上限 20MiB，默认存储目录为后端工作目录下的 `data/uploads`，可通过 `STORAGE_BASE_PATH` 配置；Flyway V3 新建 documents 表。
+
+接口位于 `/api/knowledge-bases/{knowledgeBaseId}/documents`，沿用 JWT 与用户数据隔离。当前不新增前端文档页面，不包含文本切分、Embedding 或 RAG。完整变更清单、启动命令、curl 示例、安全边界及测试说明见 [Stage 4 文档](docs/stage4.md)。
 
 ## 前端启动
 
