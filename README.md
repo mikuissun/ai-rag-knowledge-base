@@ -1,142 +1,196 @@
-# 企业级 AI 知识库问答系统
+# 企业级 AI 知识库 RAG 系统
 
-用于求职作品集的企业级 AI 应用项目。项目将支持企业知识库管理、文档解析、向量检索、RAG 问答、多轮对话、SSE 流式回答和引用来源展示。
+## 项目简介
 
-> 当前完成 Stage 8：已具备 JWT 用户隔离、知识库与文档管理、文本切分、Embedding、Qdrant 向量检索、RAG 问答、引用来源、SSE 流式回答和可用的 Vue 前端工作区。
+基于 Spring Boot、Vue、Qdrant 和通义千问构建的企业知识库 RAG 问答系统。
+
+系统支持从文档上传、解析、向量化、检索到问答生成的完整链路，并通过 Web UI 提供知识库管理、文档处理和流式问答能力。
+
+## 核心功能
+
+- JWT 用户认证
+- 用户数据隔离
+- 知识库 CRUD
+- PDF / DOCX / Markdown / TXT 文档上传与解析
+- Chunk + Overlap 文本切分
+- Embedding 向量化
+- Qdrant 向量检索
+- RAG 问答
+- Citation 结构化来源
+- SSE 流式回答
+- AbortController 停止生成
+- Prompt Injection 基础防护
+- 完整 Web UI
+
+## 系统架构
+
+~~~mermaid
+flowchart LR
+    UI[Vue 3 Web UI] --> API[Spring Boot REST / SSE]
+    API --> DB[(MySQL)]
+    API --> EMB[DashScope Embedding]
+    API --> VDB[(Qdrant)]
+    API --> LLM[qwen-plus]
+~~~
+
+## RAG 工作流程
+
+~~~mermaid
+flowchart LR
+    D[Document] --> P[Parser] --> C[Chunk] --> E[Embedding] --> V[(Qdrant)]
+    Q[Question] --> QE[Query Embedding] --> R[TopK Retrieval]
+    V --> R
+    R --> CTX[Context Prompt] --> L[qwen-plus] --> OUT[SSE Answer + Citation]
+~~~
 
 ## 技术栈
 
-- 后端：Java 17、Spring Boot 3、Maven、MyBatis-Plus、MySQL 8、Flyway
-- 前端：Vue 3、TypeScript、Vite、Element Plus、Axios、Vue Router
-- AI：DashScope `text-embedding-v4`、通义千问 `qwen-plus`
-- 向量数据库：Qdrant 1.14.1、官方 Java Client 1.14.1
-- 基础设施：Docker Compose
+| 分类 | 技术 |
+| --- | --- |
+| Backend | Java 17、Spring Boot 3、Maven、MyBatis-Plus、JWT |
+| Frontend | Vue 3、TypeScript、Vite、Element Plus、Axios、Vue Router |
+| AI | DashScope text-embedding-v4、通义千问 qwen-plus |
+| Vector Database | Qdrant 1.14.1、官方 Java Client |
+| Database | MySQL 8、Flyway |
+| Infrastructure | Docker Desktop、Docker Compose、本地文件系统 |
 
-## 当前项目结构
+## 项目亮点
 
-```text
-.
-├── backend/              # Spring Boot 后端
-├── frontend/             # Vue 3 前端
-├── deploy/               # Docker Compose 基础设施配置
-├── docs/                 # 架构与开发文档
-├── .env.example          # 环境变量模板
-├── .gitignore
-└── README.md
-```
+- 不信任前端传入的 userId，用户身份统一从已验证的 JWT 获取。
+- MySQL 业务查询与 Qdrant payload filter 同时执行用户级隔离。
+- 文档处理状态与向量索引状态分离管理，便于重试和定位失败环节。
+- 外部 Embedding、Qdrant 和 LLM 调用不放在长时间数据库事务中。
+- Citation 以结构化数据返回文档、Chunk、相似度和摘要信息。
+- SSE 配合 fetch + ReadableStream 实现流式回答，使用 AbortController 支持停止生成。
+- Prompt 对知识库内容与系统指令进行边界区分，提供基础 Prompt Injection 防护。
+- 检索不到足够相关资料时拒绝自由生成，明确告知当前知识库无法确定。
 
-## 环境要求
+## 功能展示
 
-- JDK 17+
-- Maven 3.6+
-- Node.js 20+（建议使用 LTS 版本）
-- npm 10+
-- Docker Desktop（运行 MySQL 与 Qdrant 时需要）
+### 知识库管理
 
-## 后端启动
+<!-- screenshot -->
 
-推荐使用根目录 PowerShell 脚本统一启动本地依赖和后端：
+### 文档处理与索引
 
-1. 首次使用时复制环境变量模板：
+<!-- screenshot -->
 
-```powershell
+### RAG 问答
+
+<!-- screenshot -->
+
+### Citation 来源
+
+<!-- screenshot -->
+
+## 快速开始
+
+### 1. 准备环境变量
+
+在项目根目录执行：
+
+~~~powershell
 Copy-Item .env.example .env
-```
+~~~
 
-2. 编辑根目录 .env，至少填写 MYSQL_ROOT_PASSWORD、MYSQL_PASSWORD 和不少于 32 字符的 JWT_SECRET。MYSQL_PASSWORD 应与本地 MySQL 应用连接使用的密码一致；处理文档、生成 Embedding 和 RAG 问答时还需要填写 DASHSCOPE_API_KEY。.env 已被 .gitignore 忽略，不要提交真实值；.env.example 只保留变量模板。
+编辑根目录 .env，填写本地数据库、JWT 和 DashScope 配置。真实密钥只保存在本地 .env，不要提交到 Git。
 
-如果本地 MySQL 数据卷已经初始化过，修改 .env 中的 MYSQL_ROOT_PASSWORD 不会自动修改数据库内已有 root 密码；遇到 Access denied 时，请将 MYSQL_PASSWORD 改为该数据卷实际使用的密码。除非明确要重置本地数据，否则不要使用 docker compose down -v。
+### 2. 启动基础服务和后端
 
-3. 从项目根目录运行：
+确认 Docker Desktop 已启动，然后在项目根目录运行：
 
-```powershell
+~~~powershell
 .\scripts\dev-start.ps1
-```
+~~~
 
-脚本会读取根目录 .env，将变量注入当前启动进程，启动并检查 Docker Compose 中的 MySQL 和 Qdrant，然后在 backend 目录执行 mvn spring-boot:run。Docker MySQL 默认通过宿主机 localhost:3306 访问，Qdrant 默认使用 HTTP 6333 和 gRPC 6334。
+该脚本会读取根目录 .env，启动 Docker Compose 中的 MySQL 和 Qdrant，并运行后端 Spring Boot 服务。
 
-如果 PowerShell 阻止执行本地脚本，可以只对当前窗口临时放宽策略：
+### 3. 启动前端
 
-```powershell
-Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
-.\scripts\dev-start.ps1
-```
+另开终端：
 
-脚本支持 -DryRun 检查 .env 格式和必填值而不启动服务：
-
-```powershell
-.\scripts\dev-start.ps1 -DryRun
-```
-
-按 Ctrl+C 会停止前台 Spring Boot 进程；需要停止 Docker 服务时，在项目根目录执行：
-
-```powershell
-docker compose --env-file .env -f deploy/docker-compose.yml down
-```
-
-不要使用 docker compose down -v，以保留本地 MySQL 和 Qdrant 数据卷。
-
-健康检查：GET http://localhost:8080/api/health
-
-启动时 Flyway 会执行数据库迁移。认证接口：`POST /api/auth/register`、`POST /api/auth/login`；登录后可通过 `Authorization: Bearer <JWT>` 调用知识库接口。
-
-## 知识库 API
-
-- `POST /api/knowledge-bases`：创建当前用户的知识库
-- `GET /api/knowledge-bases`：查询当前用户的知识库列表
-- `GET /api/knowledge-bases/{id}`：查询当前用户的知识库详情
-- `PUT /api/knowledge-bases/{id}`：修改当前用户的知识库
-- `DELETE /api/knowledge-bases/{id}`：删除当前用户的知识库
-
-知识库接口仅从已验证的 JWT 取得当前用户，不接受 `userId` 请求参数。当前版本采用物理删除；含文档的知识库返回 409，请先删除文档。
-
-## Stage 4 文档管理
-
-已提供 PDF / DOCX / Markdown / TXT 上传、原文件保存、正文解析、文档列表/详情及删除 API。单文件上限 20MiB，默认存储目录为后端工作目录下的 `data/uploads`，可通过 `STORAGE_BASE_PATH` 配置；Flyway V3 新建 documents 表。
-
-接口位于 `/api/knowledge-bases/{knowledgeBaseId}/documents`，沿用 JWT 与用户数据隔离。Stage 4 本身不包含文本切分、Embedding 或 RAG。完整变更清单、启动命令、curl 示例、安全边界及测试说明见 [Stage 4 文档](docs/stage4.md)。
-
-## Stage 5 文本切分与 Embedding
-
-已新增文档处理接口 `POST /api/knowledge-bases/{knowledgeBaseId}/documents/{documentId}/process`。正文按自然边界切分后，通过 DashScope `text-embedding-v4` 生成 1024 维向量；Chunk 和向量暂存 MySQL，供下一阶段接入向量数据库。
-
-默认切分参数为 1000 字符、150 字符 overlap、单文档最多 500 个 Chunk。处理配置、事务设计、状态流转、测试方式和已知边界见 [Stage 5 文档](docs/stage5.md)。
-
-## Stage 6 Qdrant 向量索引与检索
-
-处理完成后调用 `POST /api/knowledge-bases/{knowledgeBaseId}/documents/{documentId}/index`，将 MySQL 中暂存的 Chunk Embedding 幂等写入 Qdrant。调用 `POST /api/knowledge-bases/{knowledgeBaseId}/search` 可将查询文本向量化，并按 `userId + knowledgeBaseId` 双重过滤返回最相关的 Chunk。
-
-统一 collection 为 `knowledge_chunks`，使用 1024 维稠密向量和 Cosine 距离；默认 `topK=5`、最大 20。配置、payload、索引/检索数据流、故障策略和 curl 示例见 [Stage 6 文档](docs/stage6.md)。Stage 6 只返回检索结果，不生成 RAG 答案。
-
-## Stage 7 RAG 问答与 SSE
-
-新增普通问答接口 `POST /api/knowledge-bases/{knowledgeBaseId}/chat` 与流式接口 `POST /api/knowledge-bases/{knowledgeBaseId}/chat/stream`。系统将问题向量化，按 `userId + knowledgeBaseId` 从 Qdrant 检索上下文，过滤低相关结果、控制 Context 长度，再调用 `qwen-plus` 生成答案并返回结构化引用。
-
-默认 `topK=5`、最低分数 `0.5`、最大 Context 正文 12000 字符、SSE 超时 120 秒。Prompt 防注入边界、事件格式、配置和 curl 示例见 [Stage 7 文档](docs/stage7.md)。Stage 7 仍是单轮 RAG，不包含 Agent、Tool Calling、MCP 或多智能体。
-
-## Stage 8 Vue 前端工作区
-
-前端已接入真实后端 API，提供登录/注册、知识库 CRUD、文档上传与详情、文档处理、Qdrant 索引和 SSE RAG 对话页面。前端不会接触 `DASHSCOPE_API_KEY` 等后端密钥，所有请求通过 Axios 自动携带 JWT；流式问答使用 `fetch + ReadableStream` 解析 POST SSE，并展示结构化引用来源。
-
-```powershell
-Copy-Item frontend/.env.example frontend/.env
+~~~powershell
 cd frontend
 npm install
 npm run dev
-```
+~~~
 
-默认使用 Vite `/api` 代理访问 `http://localhost:8080`。如需直接访问其他后端地址，在 `frontend/.env` 设置 `VITE_API_BASE_URL`；该文件不应提交。前端页面地址为 `http://localhost:5173`，进入知识库详情后可上传文档、点击“处理文档”和“建立索引”，再使用 RAG 聊天框提问。问答需要后端已配置 `DASHSCOPE_API_KEY`，前端构建本身不调用真实模型。
+前端默认地址为 http://localhost:5173，后端默认地址为 http://localhost:8080。开发环境下 Vite 代理将 /api 请求转发到后端。
 
-## Docker 启动
+如需单独配置前端 API 地址，可参考 frontend/.env.example 创建 frontend/.env。该文件不应提交。
 
-Docker Desktop 安装并启动后，在项目根目录配置 `MYSQL_ROOT_PASSWORD`，再执行：
+## 环境变量
 
-```bash
-docker compose --env-file .env -f deploy/docker-compose.yml up -d
-```
+根目录 .env 使用以下变量：
 
-该配置会启动 MySQL 8 与 Qdrant，并使用命名卷持久化数据。
+~~~text
+MYSQL_HOST
+MYSQL_PORT
+MYSQL_DATABASE
+MYSQL_USERNAME
+MYSQL_PASSWORD
+MYSQL_ROOT_PASSWORD
+JWT_SECRET
+DASHSCOPE_API_KEY
+~~~
 
-## 后续开发计划
+.env.example 只包含变量模板，不包含真实密码或 API Key。前端 VITE_* 配置属于公开构建配置，不应放入后端密钥。
 
-项目将按阶段推进：后端基础架构、用户与权限、知识库管理、文档解析、文本切分与 Embedding、向量检索、RAG 问答与 SSE、前端工作区、有限多轮对话、测试优化与部署。详见 [开发计划](docs/development-plan.md)。
+## 核心 API
+
+- POST /api/auth/register
+- POST /api/auth/login
+- GET/POST /api/knowledge-bases
+- GET/PUT/DELETE /api/knowledge-bases/{knowledgeBaseId}
+- GET/POST /api/knowledge-bases/{knowledgeBaseId}/documents
+- POST /api/knowledge-bases/{knowledgeBaseId}/documents/{documentId}/process
+- POST /api/knowledge-bases/{knowledgeBaseId}/documents/{documentId}/index
+- POST /api/knowledge-bases/{knowledgeBaseId}/chat
+- POST /api/knowledge-bases/{knowledgeBaseId}/chat/stream
+
+所有受保护接口均使用 Authorization: Bearer <JWT>，并由后端校验当前用户与资源归属。
+
+## 项目结构
+
+~~~text
+.
+├── backend/      # Spring Boot 后端
+├── frontend/     # Vue 3 前端
+├── deploy/       # Docker Compose 基础设施配置
+├── docs/         # 架构、开发计划与阶段文档
+├── scripts/      # 本地开发启动脚本
+├── .env.example  # 环境变量模板
+└── README.md
+~~~
+
+## 测试与验证
+
+- Backend 61 个测试场景已验证。
+- Qdrant 集成测试通过。
+- Frontend build 通过。
+- 真实 DashScope + Qdrant + SSE + Citation 链路已手动验证。
+- 验证范围包括文档上传、解析、Chunk、Embedding、Qdrant Index、Query Embedding、TopK Retrieval、Prompt、qwen-plus、SSE 和 Citation。
+
+以上为本地开发和端到端联调验证，不等同于生产环境验证。
+
+## 当前边界
+
+- 当前为单轮 RAG，暂未提供持久化多轮对话历史。
+- 当前主要使用向量检索。
+- 极短查询可能存在召回不足。
+- 未实现 Hybrid Search。
+- 未实现 Rerank。
+- 未实现 Agent、MCP、Multi-Agent。
+
+## 文档
+
+- [系统架构](docs/architecture.md)
+- [开发计划](docs/development-plan.md)
+- [Stage 1](docs/stage1.md)
+- [Stage 2](docs/stage2.md)
+- [Stage 3](docs/stage3.md)
+- [Stage 4](docs/stage4.md)
+- [Stage 5](docs/stage5.md)
+- [Stage 6](docs/stage6.md)
+- [Stage 7](docs/stage7.md)
+- [Stage 8](docs/stage8.md)
