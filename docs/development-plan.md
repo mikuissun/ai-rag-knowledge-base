@@ -1,52 +1,41 @@
-# 开发计划
+# 开发计划与完成状态
 
-## 阶段 1：项目工程初始化
+## 当前进度
 
-- 建立 Spring Boot 和 Vue 3 工程。
-- 配置健康检查、环境变量模板、Docker Compose 和项目文档。
+Stage 1～8 已完成。本文按实际 Git 历史整理，不再将文档处理、向量检索、RAG、SSE 和完整前端列为待开发功能。
 
-## 阶段 2：数据库与用户认证基础
+| 阶段 | 已完成内容 | 对应提交 |
+| --- | --- | --- |
+| [Stage 1](stage1.md) | Java 17 / Spring Boot 3 / Maven、MyBatis-Plus 依赖、MySQL / Qdrant Compose、Health API、基础结构 | `751a605` |
+| [Stage 2](stage2.md) | User 实体、Flyway V1、注册登录、BCrypt、JWT 签发与解析、最小认证前端 | `cd8de14` |
+| [Stage 3](stage3.md) | Flyway V2、知识库 CRUD、JWT 拦截、CurrentUserContext、用户隔离及最小管理界面 | `868dc8a` |
+| [Stage 4](stage4.md) | Flyway V3、PDF / DOCX / Markdown / TXT 上传、保存、解析、查询删除及文件补偿 | `23ebd7c` |
+| [Stage 5](stage5.md) | Flyway V4、文本切分、Embedding、MySQL 暂存 Chunk / 向量、处理状态及重处理 | `1cabbe2` |
+| [Stage 6](stage6.md) | Flyway V5、Qdrant 初始化、批量索引、隔离过滤、相似度检索与删除联动 | `307e820` |
+| [Stage 7](stage7.md) | 单轮 RAG、Prompt 构建、阈值和上下文限制、引用、普通 / SSE 问答及异步身份清理 | `3aca7ae` |
+| [Stage 8](stage8.md) | Vue 工作区、认证及知识库 UI、文档操作、POST SSE、Citation、Abort、错误与空状态 | `d258450` |
 
-- 已完成统一响应、异常处理、Flyway、`users` 表、MyBatis-Plus、BCrypt 和 JWT 基础能力。
-- 已完成注册与登录 API，以及最小前端认证界面。
+## 已完成的配套优化
 
-## 阶段 3：知识库管理
+- `a2d14d5 chore: improve local development startup`：PowerShell 读取根目录 `.env`，启动 Compose 并运行后端。
+- `3d61878 style: polish rag frontend experience`：视觉层级、中文状态、Chat / Citation、响应式与低风险组件拆分。
+- 后端测试和前端构建 / 浏览器验证范围见各阶段文档；真实服务联调记录及证据边界见 Stage 8。本次仅整理文档，不代表重新执行全部回归或真实模型调用。
 
-- 已完成 JWT 请求拦截、当前用户上下文、知识库 Flyway 迁移和当前用户范围内的 CRUD。
-- 已完成知识库管理的最小前端界面与用户隔离测试。
+## 阶段归属说明
 
-## 阶段 4：认证授权完善
+文档既解释当前能力，也注明首次加入的提交。User 与注册登录首次加入 Stage 2；JWT 拦截器、`CurrentUserContext` 和 `WebMvcConfig` 首次加入 Stage 3；SSE 异步线程上下文清理在 Stage 7 补充。不能把当前完整实现全部归入 Stage 1。
 
-- Spring Security 认证过滤器、JWT 请求校验与受保护接口权限控制。
+当前认证使用 MVC 拦截器，不是 Spring Security FilterChain。模型适配通过项目自己的服务接口和 JDK HttpClient 实现，未引入 LangChain4j。原计划中的“Stage 4 认证过滤器”“Stage 10 SSE”“Stage 11 完整前端”不再作为当前阶段编号使用。
 
-## 阶段 5：文档上传与解析
+`/process` 与 `/index` 保持分离；当前 Word 支持 DOCX，不支持旧版 DOC。已完成的单轮问答不包含聊天历史或 Prompt CRUD。
 
-- 支持 PDF、Word、Markdown 的上传、解析和处理状态管理。
+## 未实现事项与后续候选
 
-## 阶段 6：文本切分与 Embedding
+以下仅记录边界，不表示已经实现，也不表示本次开始开发：
 
-- 文本分片、元数据保存和通义千问 Embedding 调用。
+- 多轮会话、聊天历史持久化和历史查询。
+- Prompt 版本与管理界面。
+- 持续集成、可重复浏览器端到端测试、生产部署、监控和跨存储故障恢复验证。
+- 更深入的性能与构建体积优化、展示材料和部署文档完善。
 
-## 阶段 7：Qdrant 向量检索
-
-- 向量写入、相似度检索和知识库范围过滤。
-
-## 阶段 8：RAG 问答
-
-- 检索上下文、Prompt 组装、模型回答与来源引用。
-
-## 阶段 9：多轮对话与历史
-
-- 会话、消息持久化、上下文窗口和历史查询。
-
-## 阶段 10：SSE 流式输出
-
-- 流式回答事件、错误处理和前端消费。
-
-## 阶段 11：前端完整页面
-
-- 登录、知识库、文档、聊天、来源引用与 Prompt 管理界面。
-
-## 阶段 12：测试、优化、文档和部署
-
-- 补充测试、性能优化、接口文档、部署文档和演示材料。
+Agent、Tool Calling、MCP、Multi-Agent、Hybrid Search、Rerank 不属于已完成的 Stage 1～8；是否开展任何新功能应另行确认。
