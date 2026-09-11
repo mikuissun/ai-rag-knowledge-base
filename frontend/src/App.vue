@@ -25,13 +25,13 @@ onUnmounted(() => window.removeEventListener('knowledge-base:unauthorized', onUn
 <template>
   <div v-if="showShell" class="app-shell">
     <el-container class="app-container">
-      <el-aside width="240px" class="app-aside">
+      <el-aside width="224px" class="app-aside">
         <div class="brand-block">
           <span class="brand-mark">KB</span>
           <div><strong>Knowledge Hub</strong><small>企业知识库</small></div>
         </div>
         <nav class="side-nav">
-          <RouterLink to="/knowledge-bases" class="side-link" active-class="active"><span>▦</span> 知识库</RouterLink>
+          <RouterLink to="/knowledge-bases" :class="['side-link', { active: showShell }]"><span aria-hidden="true">▦</span> 知识库</RouterLink>
         </nav>
         <div class="aside-footer">
           <div class="account-chip">
@@ -43,10 +43,10 @@ onUnmounted(() => window.removeEventListener('knowledge-base:unauthorized', onUn
       </el-aside>
       <el-container>
         <el-header class="app-header">
-          <div><span class="header-kicker">AI WORKSPACE</span><h1>{{ route.name === 'knowledge-base-detail' ? '知识库详情' : '我的知识库' }}</h1></div>
-          <div class="header-status"><span class="status-dot" /> 服务已连接</div>
+          <div><span class="header-kicker">知识工作区</span><h1>{{ route.name === 'knowledge-base-detail' ? '知识库详情' : '我的知识库' }}</h1></div>
+          <div class="header-status">个人知识空间</div>
         </el-header>
-        <el-main class="app-main"><RouterView /></el-main>
+        <el-main class="app-main"><RouterView :key="route.path" /></el-main>
       </el-container>
     </el-container>
   </div>
