@@ -65,23 +65,19 @@ flowchart LR
 - Prompt 对知识库内容与系统指令进行边界区分，提供基础 Prompt Injection 防护。
 - 检索不到足够相关资料时拒绝自由生成，明确告知当前知识库无法确定。
 
-## 功能展示
+# 功能展示
 
 ### 知识库管理
 
-<!-- screenshot -->
+![知识库管理](docs/images/knowledge-base-list.png)
 
-### 文档处理与索引
+### 文档处理与向量索引
 
-<!-- screenshot -->
+![文档处理与索引](docs/images/document-processing.png)
 
-### RAG 问答
+### RAG 流式问答与来源引用
 
-<!-- screenshot -->
-
-### Citation 来源
-
-<!-- screenshot -->
+![RAG 问答与来源引用](docs/images/rag-chat.png)
 
 ## 快速开始
 
@@ -93,7 +89,7 @@ flowchart LR
 Copy-Item .env.example .env
 ~~~
 
-编辑根目录 .env，填写本地数据库、JWT 和 DashScope 配置。真实密钥只保存在本地 .env，不要提交到 Git。
+编辑根目录 .env，填写本地数据库、JWT 和 DashScope 配置。真实密钥只保存在本地 .env，不提交到 Git。
 
 ### 2. 启动基础服务和后端
 
@@ -117,7 +113,7 @@ npm run dev
 
 前端默认地址为 http://localhost:5173，后端默认地址为 http://localhost:8080。开发环境下 Vite 代理将 /api 请求转发到后端。
 
-如需单独配置前端 API 地址，可参考 frontend/.env.example 创建 frontend/.env。该文件不应提交。
+单独配置前端 API 地址，参考 frontend/.env.example 创建 frontend/.env。该文件不提交。
 
 ## 环境变量
 
@@ -134,7 +130,7 @@ JWT_SECRET
 DASHSCOPE_API_KEY
 ~~~
 
-.env.example 只包含变量模板，不包含真实密码或 API Key。前端 VITE_* 配置属于公开构建配置，不应放入后端密钥。
+.env.example 只包含变量模板，不包含真实密码或 API Key。前端 VITE_* 配置属于公开构建配置，不放入后端密钥。
 
 ## 核心 API
 
@@ -147,6 +143,7 @@ DASHSCOPE_API_KEY
 - POST /api/knowledge-bases/{knowledgeBaseId}/documents/{documentId}/index
 - POST /api/knowledge-bases/{knowledgeBaseId}/chat
 - POST /api/knowledge-bases/{knowledgeBaseId}/chat/stream
+- POST /api/knowledge-bases/{knowledgeBaseId}/search
 
 所有受保护接口均使用 Authorization: Bearer <JWT>，并由后端校验当前用户与资源归属。
 
@@ -175,12 +172,9 @@ DASHSCOPE_API_KEY
 
 ## 当前边界
 
-- 当前为单轮 RAG，暂未提供持久化多轮对话历史。
-- 当前主要使用向量检索。
-- 极短查询可能存在召回不足。
-- 未实现 Hybrid Search。
-- 未实现 Rerank。
-- 未实现 Agent、MCP、Multi-Agent。
+- 当前采用单轮 RAG，未持久化多轮对话历史。
+- 检索以 Qdrant 向量相似度搜索为主，暂未引入 Hybrid Search 与 Rerank。
+- Agent、MCP 与 Multi-Agent 属于独立项目方向，不包含在本项目范围内。
 
 ## 文档
 
