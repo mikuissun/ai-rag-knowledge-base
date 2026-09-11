@@ -2,12 +2,12 @@
 
 用于求职作品集的企业级 AI 应用项目。项目将支持企业知识库管理、文档解析、向量检索、RAG 问答、多轮对话、SSE 流式回答和引用来源展示。
 
-> 当前完成 Stage 7：已具备 JWT 用户隔离、知识库与文档管理、文本切分、Embedding、Qdrant 向量检索、RAG 问答、引用来源和 SSE 流式回答。
+> 当前完成 Stage 8：已具备 JWT 用户隔离、知识库与文档管理、文本切分、Embedding、Qdrant 向量检索、RAG 问答、引用来源、SSE 流式回答和可用的 Vue 前端工作区。
 
 ## 技术栈
 
 - 后端：Java 17、Spring Boot 3、Maven、MyBatis-Plus、MySQL 8、Flyway
-- 前端：Vue 3、TypeScript、Vite、Element Plus（后续接入）
+- 前端：Vue 3、TypeScript、Vite、Element Plus、Axios、Vue Router
 - AI：DashScope `text-embedding-v4`、通义千问 `qwen-plus`
 - 向量数据库：Qdrant 1.14.1、官方 Java Client 1.14.1
 - 基础设施：Docker Compose
@@ -114,15 +114,18 @@ docker compose --env-file .env -f deploy/docker-compose.yml down
 
 默认 `topK=5`、最低分数 `0.5`、最大 Context 正文 12000 字符、SSE 超时 120 秒。Prompt 防注入边界、事件格式、配置和 curl 示例见 [Stage 7 文档](docs/stage7.md)。Stage 7 仍是单轮 RAG，不包含 Agent、Tool Calling、MCP 或多智能体。
 
-## 前端启动
+## Stage 8 Vue 前端工作区
 
-```bash
+前端已接入真实后端 API，提供登录/注册、知识库 CRUD、文档上传与详情、文档处理、Qdrant 索引和 SSE RAG 对话页面。前端不会接触 `DASHSCOPE_API_KEY` 等后端密钥，所有请求通过 Axios 自动携带 JWT；流式问答使用 `fetch + ReadableStream` 解析 POST SSE，并展示结构化引用来源。
+
+```powershell
+Copy-Item frontend/.env.example frontend/.env
 cd frontend
 npm install
 npm run dev
 ```
 
-默认访问地址：`http://localhost:5173`
+默认使用 Vite `/api` 代理访问 `http://localhost:8080`。如需直接访问其他后端地址，在 `frontend/.env` 设置 `VITE_API_BASE_URL`；该文件不应提交。前端页面地址为 `http://localhost:5173`，进入知识库详情后可上传文档、点击“处理文档”和“建立索引”，再使用 RAG 聊天框提问。问答需要后端已配置 `DASHSCOPE_API_KEY`，前端构建本身不调用真实模型。
 
 ## Docker 启动
 
@@ -136,4 +139,4 @@ docker compose --env-file .env -f deploy/docker-compose.yml up -d
 
 ## 后续开发计划
 
-项目将按阶段推进：后端基础架构、用户与权限、知识库管理、文档解析、文本切分与 Embedding、向量检索、RAG 问答与 SSE、有限多轮对话、前端页面、测试优化与部署。详见 [开发计划](docs/development-plan.md)。
+项目将按阶段推进：后端基础架构、用户与权限、知识库管理、文档解析、文本切分与 Embedding、向量检索、RAG 问答与 SSE、前端工作区、有限多轮对话、测试优化与部署。详见 [开发计划](docs/development-plan.md)。

@@ -1,46 +1,24 @@
-export interface KnowledgeBase {
-  id: number
-  name: string
-  description: string | null
-  status: number
-  createdAt: string
-  updatedAt: string
+import { request } from './http'
+import type { KnowledgeBase, KnowledgeBaseForm } from '../types/api'
+
+export type { KnowledgeBase }
+
+export function listKnowledgeBases() {
+  return request<KnowledgeBase[]>({ method: 'GET', url: '/api/knowledge-bases' })
 }
 
-interface ApiResponse<T> {
-  code: number
-  message: string
-  data: T
+export function getKnowledgeBase(id: number) {
+  return request<KnowledgeBase>({ method: 'GET', url: `/api/knowledge-bases/${id}` })
 }
 
-async function request<T>(path: string, token: string, options: RequestInit = {}): Promise<T> {
-  const response = await fetch(`/api/knowledge-bases${path}`, {
-    ...options,
-    headers: {
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json',
-      ...options.headers,
-    },
-  })
-  const payload = (await response.json()) as ApiResponse<T>
-  if (!response.ok || payload.code !== 200) {
-    throw new Error(payload.message || '请求失败，请稍后重试')
-  }
-  return payload.data
+export function createKnowledgeBase(body: KnowledgeBaseForm) {
+  return request<KnowledgeBase>({ method: 'POST', url: '/api/knowledge-bases', data: body })
 }
 
-export function listKnowledgeBases(token: string) {
-  return request<KnowledgeBase[]>('', token)
+export function updateKnowledgeBase(id: number, body: KnowledgeBaseForm) {
+  return request<KnowledgeBase>({ method: 'PUT', url: `/api/knowledge-bases/${id}`, data: body })
 }
 
-export function createKnowledgeBase(token: string, body: { name: string; description: string }) {
-  return request<KnowledgeBase>('', token, { method: 'POST', body: JSON.stringify(body) })
-}
-
-export function updateKnowledgeBase(token: string, id: number, body: { name: string; description: string }) {
-  return request<KnowledgeBase>(`/${id}`, token, { method: 'PUT', body: JSON.stringify(body) })
-}
-
-export function deleteKnowledgeBase(token: string, id: number) {
-  return request<void>(`/${id}`, token, { method: 'DELETE' })
+export function deleteKnowledgeBase(id: number) {
+  return request<void>({ method: 'DELETE', url: `/api/knowledge-bases/${id}` })
 }
