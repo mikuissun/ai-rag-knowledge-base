@@ -35,15 +35,48 @@
 
 ## 后端启动
 
-1. 启动 Docker MySQL，或准备一个可访问的 MySQL 8 数据库。
-2. 在终端设置 MySQL 连接变量与至少 32 字符的 `JWT_SECRET`。处理和检索文档时还需设置 `DASHSCOPE_API_KEY`，并确保 Qdrant 的 HTTP `6333` 与 gRPC `6334` 端口可访问。`.env.example` 仅作为变量模板；Spring Boot 从系统环境变量读取配置。
-3. 在 `backend` 目录执行：
+推荐使用根目录 PowerShell 脚本统一启动本地依赖和后端：
 
-```bash
-mvn spring-boot:run
+1. 首次使用时复制环境变量模板：
+
+```powershell
+Copy-Item .env.example .env
 ```
 
-健康检查：`GET http://localhost:8080/api/health`
+2. 编辑根目录 .env，至少填写 MYSQL_ROOT_PASSWORD、MYSQL_PASSWORD 和不少于 32 字符的 JWT_SECRET。MYSQL_PASSWORD 应与本地 MySQL 应用连接使用的密码一致；处理文档、生成 Embedding 和 RAG 问答时还需要填写 DASHSCOPE_API_KEY。.env 已被 .gitignore 忽略，不要提交真实值；.env.example 只保留变量模板。
+
+如果本地 MySQL 数据卷已经初始化过，修改 .env 中的 MYSQL_ROOT_PASSWORD 不会自动修改数据库内已有 root 密码；遇到 Access denied 时，请将 MYSQL_PASSWORD 改为该数据卷实际使用的密码。除非明确要重置本地数据，否则不要使用 docker compose down -v。
+
+3. 从项目根目录运行：
+
+```powershell
+.\scripts\dev-start.ps1
+```
+
+脚本会读取根目录 .env，将变量注入当前启动进程，启动并检查 Docker Compose 中的 MySQL 和 Qdrant，然后在 backend 目录执行 mvn spring-boot:run。Docker MySQL 默认通过宿主机 localhost:3306 访问，Qdrant 默认使用 HTTP 6333 和 gRPC 6334。
+
+如果 PowerShell 阻止执行本地脚本，可以只对当前窗口临时放宽策略：
+
+```powershell
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+.\scripts\dev-start.ps1
+```
+
+脚本支持 -DryRun 检查 .env 格式和必填值而不启动服务：
+
+```powershell
+.\scripts\dev-start.ps1 -DryRun
+```
+
+按 Ctrl+C 会停止前台 Spring Boot 进程；需要停止 Docker 服务时，在项目根目录执行：
+
+```powershell
+docker compose --env-file .env -f deploy/docker-compose.yml down
+```
+
+不要使用 docker compose down -v，以保留本地 MySQL 和 Qdrant 数据卷。
+
+健康检查：GET http://localhost:8080/api/health
 
 启动时 Flyway 会执行数据库迁移。认证接口：`POST /api/auth/register`、`POST /api/auth/login`；登录后可通过 `Authorization: Bearer <JWT>` 调用知识库接口。
 
