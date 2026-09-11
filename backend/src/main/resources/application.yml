@@ -25,6 +25,10 @@ app:
     chunk-size: ${RAG_CHUNK_SIZE:1000}
     chunk-overlap: ${RAG_CHUNK_OVERLAP:150}
     max-chunks-per-document: ${RAG_MAX_CHUNKS_PER_DOCUMENT:500}
+    chat:
+      min-score: ${RAG_MIN_SCORE:0.5}
+      max-context-chars: ${RAG_MAX_CONTEXT_CHARS:12000}
+      sse-timeout-seconds: ${RAG_SSE_TIMEOUT_SECONDS:120}
   embedding:
     api-key: ${DASHSCOPE_API_KEY:}
     base-url: ${DASHSCOPE_BASE_URL:https://dashscope.aliyuncs.com/compatible-mode/v1}
@@ -42,6 +46,15 @@ app:
     timeout-seconds: ${QDRANT_TIMEOUT_SECONDS:15}
     search-top-k: ${RAG_SEARCH_TOP_K:5}
     max-search-top-k: ${RAG_MAX_SEARCH_TOP_K:20}
+  llm:
+    provider: ${LLM_PROVIDER:qwen}
+    api-key: ${DASHSCOPE_API_KEY:}
+    base-url: ${DASHSCOPE_BASE_URL:https://dashscope.aliyuncs.com/compatible-mode/v1}
+    model: ${LLM_MODEL:qwen-plus}
+    temperature: ${LLM_TEMPERATURE:0.2}
+    max-tokens: ${LLM_MAX_TOKENS:1500}
+    connect-timeout-seconds: ${DASHSCOPE_CONNECT_TIMEOUT_SECONDS:10}
+    read-timeout-seconds: ${LLM_READ_TIMEOUT_SECONDS:120}
   storage:
     base-path: ${STORAGE_BASE_PATH:./data/uploads}
   jwt:

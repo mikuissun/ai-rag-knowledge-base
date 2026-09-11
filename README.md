@@ -2,13 +2,13 @@
 
 用于求职作品集的企业级 AI 应用项目。项目将支持企业知识库管理、文档解析、向量检索、RAG 问答、多轮对话、SSE 流式回答和引用来源展示。
 
-> 当前完成 Stage 6：已具备 JWT 用户隔离、知识库与文档管理、文本切分、Embedding、Qdrant 向量索引和相似度检索。最终 RAG 答案生成仍为后续阶段。
+> 当前完成 Stage 7：已具备 JWT 用户隔离、知识库与文档管理、文本切分、Embedding、Qdrant 向量检索、RAG 问答、引用来源和 SSE 流式回答。
 
 ## 技术栈
 
 - 后端：Java 17、Spring Boot 3、Maven、MyBatis-Plus、MySQL 8、Flyway
 - 前端：Vue 3、TypeScript、Vite、Element Plus（后续接入）
-- AI：DashScope `text-embedding-v4`（LLM 与 LangChain4j 后续接入）
+- AI：DashScope `text-embedding-v4`、通义千问 `qwen-plus`
 - 向量数据库：Qdrant 1.14.1、官方 Java Client 1.14.1
 - 基础设施：Docker Compose
 
@@ -75,6 +75,12 @@ mvn spring-boot:run
 
 统一 collection 为 `knowledge_chunks`，使用 1024 维稠密向量和 Cosine 距离；默认 `topK=5`、最大 20。配置、payload、索引/检索数据流、故障策略和 curl 示例见 [Stage 6 文档](docs/stage6.md)。Stage 6 只返回检索结果，不生成 RAG 答案。
 
+## Stage 7 RAG 问答与 SSE
+
+新增普通问答接口 `POST /api/knowledge-bases/{knowledgeBaseId}/chat` 与流式接口 `POST /api/knowledge-bases/{knowledgeBaseId}/chat/stream`。系统将问题向量化，按 `userId + knowledgeBaseId` 从 Qdrant 检索上下文，过滤低相关结果、控制 Context 长度，再调用 `qwen-plus` 生成答案并返回结构化引用。
+
+默认 `topK=5`、最低分数 `0.5`、最大 Context 正文 12000 字符、SSE 超时 120 秒。Prompt 防注入边界、事件格式、配置和 curl 示例见 [Stage 7 文档](docs/stage7.md)。Stage 7 仍是单轮 RAG，不包含 Agent、Tool Calling、MCP 或多智能体。
+
 ## 前端启动
 
 ```bash
@@ -97,4 +103,4 @@ docker compose --env-file .env -f deploy/docker-compose.yml up -d
 
 ## 后续开发计划
 
-项目将按阶段推进：后端基础架构、用户与权限、知识库管理、文档解析、文本切分与 Embedding、向量检索、RAG 问答、多轮对话、SSE 流式输出、前端页面、测试优化与部署。详见 [开发计划](docs/development-plan.md)。
+项目将按阶段推进：后端基础架构、用户与权限、知识库管理、文档解析、文本切分与 Embedding、向量检索、RAG 问答与 SSE、有限多轮对话、前端页面、测试优化与部署。详见 [开发计划](docs/development-plan.md)。
