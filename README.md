@@ -121,7 +121,7 @@ npm run dev
 
 ## 环境变量
 
-根目录 .env 使用以下变量：
+根目录 .env 的主要配置包括：
 
 ~~~text
 MYSQL_HOST
