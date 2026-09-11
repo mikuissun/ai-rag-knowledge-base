@@ -6,11 +6,13 @@ import java.time.LocalDateTime;
 public record DocumentResponse(Long id, Long knowledgeBaseId, String originalName,
         String fileType, Long fileSize, Integer status, LocalDateTime createdAt,
         LocalDateTime updatedAt, String contentText, String processingStatus,
-        String processingError, LocalDateTime processedAt) {
+        String processingError, LocalDateTime processedAt, String indexingStatus,
+        String indexingError, LocalDateTime indexedAt) {
     public static DocumentResponse from(Document document) {
         return new DocumentResponse(document.getId(), document.getKnowledgeBaseId(), document.getOriginalName(),
                 document.getFileType(), document.getFileSize(), document.getStatus(),
                 document.getCreatedAt(), document.getUpdatedAt(), document.getContentText(),
-                document.getProcessingStatus(), document.getProcessingError(), document.getProcessedAt());
+                document.getProcessingStatus(), document.getProcessingError(), document.getProcessedAt(),
+                document.getIndexingStatus(), document.getIndexingError(), document.getIndexedAt());
     }
 }

@@ -23,7 +23,7 @@ services:
     restart: unless-stopped
     ports:
       - "${QDRANT_PORT:-6333}:6333"
-      - "6334:6334"
+      - "${QDRANT_GRPC_PORT:-6334}:6334"
     volumes:
       - qdrant_data:/qdrant/storage
 

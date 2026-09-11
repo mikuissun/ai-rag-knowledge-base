@@ -8,6 +8,8 @@ import com.mikuissun.knowledgebase.document.entity.Document;
 import com.mikuissun.knowledgebase.document.mapper.DocumentMapper;
 import com.mikuissun.knowledgebase.document.parser.DocumentParserFactory;
 import com.mikuissun.knowledgebase.knowledge.service.KnowledgeBaseService;
+import com.mikuissun.knowledgebase.document.indexing.DocumentIndexingStatus;
+import com.mikuissun.knowledgebase.vector.VectorStoreService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -25,14 +27,17 @@ public class DocumentServiceImpl implements DocumentService {
     private final KnowledgeBaseService knowledgeBases;
     private final DocumentParserFactory parsers;
     private final LocalDocumentStorage storage;
+    private final VectorStoreService vectorStore;
     private final TransactionTemplate transactions;
 
     public DocumentServiceImpl(DocumentMapper mapper, KnowledgeBaseService knowledgeBases,
-            DocumentParserFactory parsers, LocalDocumentStorage storage, PlatformTransactionManager manager) {
+            DocumentParserFactory parsers, LocalDocumentStorage storage, VectorStoreService vectorStore,
+            PlatformTransactionManager manager) {
         this.mapper = mapper;
         this.knowledgeBases = knowledgeBases;
         this.parsers = parsers;
         this.storage = storage;
+        this.vectorStore = vectorStore;
         this.transactions = new TransactionTemplate(manager);
         // Commit happens inside execute(), so filesystem compensation also covers commit failures.
         this.transactions.setPropagationBehavior(org.springframework.transaction.TransactionDefinition.PROPAGATION_REQUIRES_NEW);
@@ -67,6 +72,8 @@ public class DocumentServiceImpl implements DocumentService {
             document.setFileSize(Files.size(path));
             document.setContentText(content);
             document.setStatus(1);
+            document.setProcessingStatus("PENDING");
+            document.setIndexingStatus(DocumentIndexingStatus.PENDING);
             return transactions.execute(transaction -> {
                 knowledgeBases.getByIdAndUserId(knowledgeBaseId, userId);
                 if (mapper.insert(document) != 1) throw new IllegalStateException("Document insert failed");
@@ -88,7 +95,8 @@ public class DocumentServiceImpl implements DocumentService {
                 .select(Document::getId, Document::getKnowledgeBaseId, Document::getOriginalName,
                         Document::getFileType, Document::getFileSize, Document::getStatus,
                         Document::getCreatedAt, Document::getUpdatedAt, Document::getProcessingStatus,
-                        Document::getProcessingError, Document::getProcessedAt)
+                        Document::getProcessingError, Document::getProcessedAt,
+                        Document::getIndexingStatus, Document::getIndexingError, Document::getIndexedAt)
                 .eq(Document::getKnowledgeBaseId, knowledgeBaseId).eq(Document::getUserId, userId)
                 .orderByDesc(Document::getCreatedAt, Document::getId))
                 .stream().map(DocumentListResponse::from).toList();
@@ -103,6 +111,10 @@ public class DocumentServiceImpl implements DocumentService {
     @Override
     public void delete(Long knowledgeBaseId, Long documentId, Long userId) {
         knowledgeBases.getByIdAndUserId(knowledgeBaseId, userId);
+        Document ownedDocument = find(knowledgeBaseId, documentId, userId, false);
+        if (mayHaveIndexedPoints(ownedDocument)) {
+            vectorStore.deleteDocumentPoints(userId, knowledgeBaseId, documentId);
+        }
         Path[] moved = new Path[2];
         try {
             transactions.executeWithoutResult(transaction -> {
@@ -154,6 +166,12 @@ public class DocumentServiceImpl implements DocumentService {
         Document document = mapper.selectOne(query);
         if (document == null) throw new BusinessException(404, "文档不存在");
         return document;
+    }
+
+    private boolean mayHaveIndexedPoints(Document document) {
+        return document.getIndexedAt() != null
+                || (document.getIndexingStatus() != null
+                && !DocumentIndexingStatus.PENDING.equals(document.getIndexingStatus()));
     }
 
     private String safeName(String original) {

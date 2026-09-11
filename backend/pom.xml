@@ -21,6 +21,8 @@
         <java.version>17</java.version>
         <mybatis-plus.version>3.5.11</mybatis-plus.version>
         <jjwt.version>0.12.6</jjwt.version>
+        <qdrant-client.version>1.14.1</qdrant-client.version>
+        <grpc.version>1.65.1</grpc.version>
     </properties>
 
     <dependencies>
@@ -78,6 +80,23 @@
         <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-crypto</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.qdrant</groupId>
+            <artifactId>client</artifactId>
+            <version>${qdrant-client.version}</version>
+        </dependency>
+        <!-- Qdrant 1.14.1 publishes gRPC APIs as runtime dependencies; grpc-stub is
+             required at compile time because QdrantClient exposes ListenableFuture. -->
+        <dependency>
+            <groupId>io.grpc</groupId>
+            <artifactId>grpc-stub</artifactId>
+            <version>${grpc.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.grpc</groupId>
+            <artifactId>grpc-protobuf</artifactId>
+            <version>${grpc.version}</version>
         </dependency>
         <dependency>
             <groupId>io.jsonwebtoken</groupId>

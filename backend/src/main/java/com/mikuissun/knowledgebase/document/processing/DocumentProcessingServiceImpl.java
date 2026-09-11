@@ -11,6 +11,7 @@ import com.mikuissun.knowledgebase.document.embedding.EmbeddingService;
 import com.mikuissun.knowledgebase.document.entity.*;
 import com.mikuissun.knowledgebase.document.mapper.*;
 import com.mikuissun.knowledgebase.document.processing.dto.DocumentProcessResponse;
+import com.mikuissun.knowledgebase.document.indexing.DocumentIndexingStatus;
 import com.mikuissun.knowledgebase.knowledge.service.KnowledgeBaseService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -74,6 +75,7 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
                         .eq(Document::getKnowledgeBaseId, knowledgeBaseId)
                         .eq(Document::getUserId, userId)
                         .ne(Document::getProcessingStatus, DocumentProcessingStatus.PROCESSING)
+                        .ne(Document::getIndexingStatus, DocumentIndexingStatus.INDEXING)
                         .set(Document::getProcessingStatus, DocumentProcessingStatus.PROCESSING)
                         .set(Document::getProcessingError, null)
                         .set(Document::getProcessedAt, null)));
@@ -81,6 +83,9 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
             Document current = findOwnedDocument(knowledgeBaseId, documentId, userId, false);
             if (DocumentProcessingStatus.PROCESSING.equals(current.getProcessingStatus())) {
                 throw new BusinessException(409, "文档正在处理中，请勿重复提交");
+            }
+            if (DocumentIndexingStatus.INDEXING.equals(current.getIndexingStatus())) {
+                throw new BusinessException(409, "文档正在建立向量索引，请稍后再重新处理");
             }
             throw new BusinessException(409, "文档处理状态发生变化，请重试");
         }
@@ -129,7 +134,9 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
                     .eq(Document::getProcessingStatus, DocumentProcessingStatus.PROCESSING)
                     .set(Document::getProcessingStatus, DocumentProcessingStatus.PROCESSED)
                     .set(Document::getProcessingError, null)
-                    .set(Document::getProcessedAt, LocalDateTime.now()));
+                    .set(Document::getProcessedAt, LocalDateTime.now())
+                    .set(Document::getIndexingStatus, DocumentIndexingStatus.PENDING)
+                    .set(Document::getIndexingError, null));
             if (updated != 1) throw new IllegalStateException("Document status update failed");
 
             return new DocumentProcessResponse(documentId, generatedChunks.size(), vectors.size(),

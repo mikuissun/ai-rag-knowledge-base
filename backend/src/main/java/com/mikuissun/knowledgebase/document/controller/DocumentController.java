@@ -7,6 +7,8 @@ import com.mikuissun.knowledgebase.document.dto.DocumentListResponse;
 import com.mikuissun.knowledgebase.document.service.DocumentService;
 import com.mikuissun.knowledgebase.document.processing.DocumentProcessingService;
 import com.mikuissun.knowledgebase.document.processing.dto.DocumentProcessResponse;
+import com.mikuissun.knowledgebase.document.indexing.DocumentIndexingService;
+import com.mikuissun.knowledgebase.document.indexing.dto.DocumentIndexResponse;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
@@ -16,9 +18,12 @@ import java.util.List;
 public class DocumentController {
     private final DocumentService service;
     private final DocumentProcessingService processingService;
-    public DocumentController(DocumentService service, DocumentProcessingService processingService) {
+    private final DocumentIndexingService indexingService;
+    public DocumentController(DocumentService service, DocumentProcessingService processingService,
+                              DocumentIndexingService indexingService) {
         this.service = service;
         this.processingService = processingService;
+        this.indexingService = indexingService;
     }
 
     @PostMapping(consumes = "multipart/form-data")
@@ -44,6 +49,13 @@ public class DocumentController {
     public ApiResponse<DocumentProcessResponse> process(@PathVariable Long knowledgeBaseId,
                                                         @PathVariable Long documentId) {
         return ApiResponse.ok(processingService.process(
+                knowledgeBaseId, documentId, CurrentUserContext.requireCurrentUser().id()));
+    }
+
+    @PostMapping("/{documentId}/index")
+    public ApiResponse<DocumentIndexResponse> index(@PathVariable Long knowledgeBaseId,
+                                                    @PathVariable Long documentId) {
+        return ApiResponse.ok(indexingService.index(
                 knowledgeBaseId, documentId, CurrentUserContext.requireCurrentUser().id()));
     }
 }

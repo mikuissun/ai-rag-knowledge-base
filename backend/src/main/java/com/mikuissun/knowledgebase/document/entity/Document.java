@@ -18,6 +18,9 @@ public class Document {
     private String processingStatus;
     private String processingError;
     private LocalDateTime processedAt;
+    private String indexingStatus;
+    private String indexingError;
+    private LocalDateTime indexedAt;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -59,6 +62,15 @@ public class Document {
 
     public LocalDateTime getProcessedAt() { return processedAt; }
     public void setProcessedAt(LocalDateTime processedAt) { this.processedAt = processedAt; }
+
+    public String getIndexingStatus() { return indexingStatus; }
+    public void setIndexingStatus(String indexingStatus) { this.indexingStatus = indexingStatus; }
+
+    public String getIndexingError() { return indexingError; }
+    public void setIndexingError(String indexingError) { this.indexingError = indexingError; }
+
+    public LocalDateTime getIndexedAt() { return indexedAt; }
+    public void setIndexedAt(LocalDateTime indexedAt) { this.indexedAt = indexedAt; }
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }

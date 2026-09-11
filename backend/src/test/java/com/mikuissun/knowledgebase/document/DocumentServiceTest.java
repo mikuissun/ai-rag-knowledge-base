@@ -6,6 +6,7 @@ import com.mikuissun.knowledgebase.document.mapper.DocumentMapper;
 import com.mikuissun.knowledgebase.document.parser.*;
 import com.mikuissun.knowledgebase.document.service.*;
 import com.mikuissun.knowledgebase.knowledge.service.KnowledgeBaseService;
+import com.mikuissun.knowledgebase.vector.VectorStoreService;
 import org.apache.pdfbox.pdmodel.*;
 import org.apache.pdfbox.pdmodel.font.*;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
@@ -20,6 +21,7 @@ import org.springframework.transaction.TransactionStatus;
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
+import java.time.LocalDateTime;
 import java.util.List;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
@@ -30,6 +32,7 @@ class DocumentServiceTest {
     DocumentMapper mapper;
     KnowledgeBaseService knowledgeBases;
     PlatformTransactionManager manager;
+    VectorStoreService vectorStore;
     DocumentService service;
     Document saved;
 
@@ -38,10 +41,11 @@ class DocumentServiceTest {
         mapper = mock(DocumentMapper.class);
         knowledgeBases = mock(KnowledgeBaseService.class);
         manager = mock(PlatformTransactionManager.class);
+        vectorStore = mock(VectorStoreService.class);
         when(manager.getTransaction(any(TransactionDefinition.class))).thenReturn(mock(TransactionStatus.class));
         service = new DocumentServiceImpl(mapper, knowledgeBases, new DocumentParserFactory(List.of(
                 new PdfDocumentParser(), new WordDocumentParser(), new MarkdownDocumentParser(), new TextDocumentParser())),
-                new LocalDocumentStorage(root.toString()), manager);
+                new LocalDocumentStorage(root.toString()), vectorStore, manager);
         when(mapper.insert(any(Document.class))).thenAnswer(call -> {
             saved = call.getArgument(0);
             saved.setId(7L);
@@ -148,6 +152,31 @@ class DocumentServiceTest {
         Files.delete(root.resolve(saved.getFilePath()));
         service.delete(10L, 7L, 1L);
         verify(mapper).delete(any(com.baomidou.mybatisplus.core.conditions.Wrapper.class));
+    }
+
+    @Test
+    void indexedDocumentDeletesQdrantPointsBeforeDatabaseAndFile() throws Exception {
+        uploadText();
+        saved.setIndexingStatus("INDEXED");
+        saved.setIndexedAt(LocalDateTime.now());
+        service.delete(10L, 7L, 1L);
+        verify(vectorStore).deleteDocumentPoints(1L, 10L, 7L);
+        verify(mapper).delete(any(com.baomidou.mybatisplus.core.conditions.Wrapper.class));
+    }
+
+    @Test
+    void qdrantDeleteFailurePreservesDatabaseAndFile() throws Exception {
+        uploadText();
+        saved.setIndexingStatus("INDEXED");
+        saved.setIndexedAt(LocalDateTime.now());
+        Path original = root.resolve(saved.getFilePath());
+        doThrow(new BusinessException(503, "Qdrant unavailable"))
+                .when(vectorStore).deleteDocumentPoints(1L, 10L, 7L);
+
+        assertThatThrownBy(() -> service.delete(10L, 7L, 1L))
+                .isInstanceOf(BusinessException.class);
+        assertThat(original).exists();
+        verify(mapper, never()).delete(any(com.baomidou.mybatisplus.core.conditions.Wrapper.class));
     }
 
     @Test
